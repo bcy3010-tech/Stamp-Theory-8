@@ -1,0 +1,1553 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>樂理課集點卡</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+        
+        .stamp-circle {
+            width: 45px;
+            height: 45px;
+            border: 3px dashed #d1d5db;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #ffffff, #f9fafb);
+            font-size: 13px;
+            font-weight: 600;
+            color: #6b7280;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .stamp-circle:hover {
+            border-color: #f59e0b;
+            border-style: solid;
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+        }
+        
+        .stamp-circle.stamped {
+            border: 3px solid #10b981;
+            background: linear-gradient(135deg, #10b981, #34d399);
+            color: white;
+            animation: bounce 0.5s ease;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+        
+        .piano-key {
+            display: inline-block;
+            margin: 0 1px;
+        }
+        
+        .white-key {
+            width: 20px;
+            height: 60px;
+            background: white;
+            border: 2px solid #374151;
+            border-radius: 0 0 8px 8px;
+        }
+        
+        .black-key {
+            width: 12px;
+            height: 35px;
+            background: #374151;
+            border-radius: 0 0 4px 4px;
+            margin: 0 -7px;
+            z-index: 2;
+            position: relative;
+        }
+        
+        .reward-badge {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: #f59e0b;
+            animation: confetti-fall 3s linear infinite;
+            z-index: 1000;
+        }
+        
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+        
+        .reward-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .reward-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+            animation: slideIn 0.5s ease;
+            border: 4px solid #fbbf24;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(-50px) scale(0.8); }
+            to { transform: translateY(0) scale(1); }
+        }
+        
+        .export-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .export-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 500px;
+            animation: slideIn 0.5s ease;
+            border: 4px solid #3b82f6;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e5e7eb;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .student-switch-modal {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            background: rgba(0, 0, 0, 0.7) !important;
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            z-index: 9999 !important;
+            animation: fadeIn 0.3s ease !important;
+        }
+
+        .student-switch-card {
+            background: white !important;
+            padding: 2rem !important;
+            border-radius: 20px !important;
+            text-align: center !important;
+            max-width: 400px !important;
+            margin: 0 1rem !important;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+            border: 4px solid #10b981 !important;
+            animation: slideIn 0.5s ease !important;
+        }
+    </style>
+</head>
+<body style="background-color: #cfeeff;" class="min-h-screen">
+    <!-- Association Name -->
+    <div class="absolute top-4 left-4 text-gray-600 text-sm font-medium flex items-center">
+        <img src="https://export-download.canva.com/connect2music" alt="協會Logo" class="w-8 h-8 mr-2 rounded-full" onerror="this.style.display='none';">
+        臺灣偏鄉音樂推廣協會
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="text-center">
+            <div class="loading-spinner mx-auto mb-4"></div>
+            <p class="text-gray-600">正在切換學生資料...</p>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <div class="flex justify-center items-center mb-4">
+                <img src="connect2music.JPG" alt="兔子" class="w-24 h-24 rounded-full shadow-lg" onerror="this.style.display='none';">
+            </div>
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">🎻 樂理課集點卡</h1>
+            <p class="text-gray-600">認真上課、開心聽音樂！</p>
+        </div>
+<!-- Student Info Card -->
+<div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
+  <div class="flex items-center justify-between mb-4">
+    <div>
+      <h2 class="text-2xl font-semibold text-gray-800">學生姓名：王晟凱</h2>
+      <div class="mt-2">
+        <div class="flex justify-between items-end">
+          <div class="flex space-x-24 items-end">
+          </div>
+
+          <!-- 加 flex justify-end -->
+          <div class="flex justify-end">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">上學期剩餘點數</label>
+             <div class="flex items-center space-x-2">
+  <input type="number" id="previousPoints"
+         class="border border-gray-300 rounded-lg px-3 py-2 w-20 text-center"
+         value="0" min="0" readonly>
+  <button onclick="showPasswordModal()"
+          class="bg-slate-300 hover:bg-slate-400 text-white px-2 py-2 rounded-lg text-sm font-semibold transition-colors">
+    編輯
+  </button>
+  <button onclick="uploadCurrentData()"
+          class="bg-blue-300 hover:bg-blue-400 text-white px-2 py-2 rounded-lg text-sm font-semibold transition-colors">
+    上傳
+  </button>
+</div>
+            </div>
+          </div>
+          <!-- 到這裡 -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+        <!-- Rules Section -->
+        <div class="bg-white rounded-2xl shadow-lg p-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6 text-center">集點規則</h2>
+            
+            <div class="space-y-6">
+                <!-- 每堂課最多 -->
+                <div style="background-color: #fdf2f8;" class="rounded-lg p-4">
+                    <div class="flex items-center justify-center">
+                        <h3 class="text-lg font-semibold text-black">⭐ 重要提醒：每堂課最多累積 4 點章數</h3>
+                    </div>
+                </div>
+                
+                <!-- 準時上課 -->
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800 mb-2">⏰ 準時上課</h3>
+                            <p class="text-gray-600">準時進入上課連結：1個章</p>
+                        </div>
+                        <button onclick="addStampsByRule(1)" class="bg-gradient-to-r from-sky-300 to-blue-300 hover:from-sky-400 hover:to-blue-400 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
+                            印章
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 上課態度 -->
+                <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border border-green-100">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800 mb-2">💪 上課態度</h3>
+                            <p class="text-gray-600">上課態度積極、努力、參與度高：1個章</p>
+                        </div>
+                        <button onclick="addStampsByRule(1)" class="bg-gradient-to-r from-emerald-300 to-green-300 hover:from-emerald-400 hover:to-green-400 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
+                            印章
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 作業狀況 -->
+                <div class="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl p-4 border border-yellow-100">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">🎼 作業狀況</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between bg-white/50 rounded-lg p-3">
+                            <div class="flex items-center">
+                                <span class="w-3 h-3 bg-gray-600 rounded-full mr-3"></span>
+                                <span class="text-gray-600">完成該週所有作業：1個章</span>
+                            </div>
+                            <button onclick="addStampsByRule(1)" class="bg-gradient-to-r from-teal-300 to-cyan-300 hover:from-teal-400 hover:to-cyan-400 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105">
+                                +1 印章
+                            </button>
+                        </div>
+                        <div class="space-y-3">
+                        <div class="flex items-center justify-between bg-white/50 rounded-lg p-3">
+                            <div class="flex items-center">
+                                <span class="w-3 h-3 bg-gray-600 rounded-full mr-3"></span>
+                                <span class="text-gray-600">該週作業用心完成、答對率高：1個章</span>
+                            </div>
+                            <button onclick="addStampsByRule(1)" class="bg-gradient-to-r from-teal-300 to-cyan-300 hover:from-teal-400 hover:to-cyan-400 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105">
+                                +1 印章
+                            </button>
+            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stamp Card -->
+        <div class="bg-white rounded-2xl shadow-lg p-8 mb-8 mt-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6 text-center">集點卡</h2>
+            
+            <!-- Stamps Grid -->
+            <div class="grid grid-cols-10 gap-3 mb-8" id="stampsGrid">
+                <!-- Stamps will be generated by JavaScript -->
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="flex justify-between items-center">
+                <button onclick="confirmResetCurrentLesson()" class="bg-gradient-to-r from-orange-300 to-red-300 hover:from-orange-400 hover:to-red-400 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
+                    重置本堂課
+                </button>
+                <button onclick="confirmUpload()" class="bg-gradient-to-r from-blue-300 to-cyan-300 hover:from-blue-400 hover:to-cyan-400 text-white px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
+                    上傳本週課程印章
+                </button>
+            </div>
+        </div>
+
+        <!-- Gifts Section -->
+        <div class="bg-white rounded-2xl shadow-lg p-8 mt-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6 text-center">樂理班禮物列表</h2>
+            <div class="text-center mb-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <div>
+                            <span class="text-lg font-semibold text-gray-700">目前章數：</span>
+                            <span class="text-lg font-bold text-blue-400" id="currentProgress">0 / 80</span>
+                        </div>
+                        <div>
+                            <span class="text-lg font-semibold text-gray-700">上學期剩餘：</span>
+                            <span class="text-lg font-bold text-cyan-600" id="previousPointsDisplay">0 點</span>
+                        </div>
+                        <div>
+                            <span class="text-lg font-semibold text-gray-700">總計：</span>
+                            <span class="text-lg font-bold text-indigo-600" id="totalPointsDisplay">0 點</span>
+                        </div>
+                    </div>
+                    <button onclick="showGiftSelectionModal()" class="bg-slate-300 hover:bg-slate-400 text-white px-4 py-2 rounded-lg font-semibold transition-colors">
+                        決定禮物
+                    </button>
+                </div>
+            </div>
+            
+        
+         
+            <!-- 30 Points -->
+            <div class="bg-slate-50 rounded-lg p-4 mb-4 border border-slate-200">
+                <h3 class="text-lg font-semibold text-slate-700 mb-3 flex items-center">
+                    <span class="bg-slate-300 text-white px-2 py-1 rounded-full text-sm mr-2">30點</span>
+                    文具
+                </h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    <label class="flex items-center text-gray-700 cursor-pointer" onclick="checkGiftRequirement(30, this)">
+                        <input type="checkbox" class="mr-2" onclick="event.stopPropagation()"> 自動鉛筆
+                    </label>
+                    <label class="flex items-center text-gray-700 cursor-pointer" onclick="checkGiftRequirement(30, this)">
+                        <input type="checkbox" class="mr-2" onclick="event.stopPropagation()"> 尺
+                    </label>
+                    <label class="flex items-center text-gray-700 cursor-pointer" onclick="checkGiftRequirement(30, this)">
+                        <input type="checkbox" class="mr-2" onclick="event.stopPropagation()"> 鉛筆
+                    </label>
+                  <label class="flex items-center text-gray-700 cursor-pointer" onclick="checkGiftRequirement(30, this)">
+                        <input type="checkbox" class="mr-2" onclick="event.stopPropagation()"> 原子筆
+                    </label>
+                    <label class="flex items-center text-gray-700 cursor-pointer" onclick="checkGiftRequirement(30, this)">
+                        <input type="checkbox" class="mr-2" onclick="event.stopPropagation()"> 立可帶
+                       </label>
+                    <label class="flex items-center text-gray-700 cursor-pointer" onclick="checkGiftRequirement(30, this)">
+                        <input type="checkbox" class="mr-2" onclick="event.stopPropagation()"> 筆記本
+                       </label>
+                    <label class="flex items-center text-gray-700 cursor-pointer" onclick="checkGiftRequirement(30, this)">
+                        <input type="checkbox" class="mr-2" onclick="event.stopPropagation()"> 橡皮擦
+                    </label>
+                </div>
+            </div>
+
+            <!-- 40 Points -->
+            <div class="bg-slate-50 rounded-lg p-4 mb-4 border border-slate-200">
+                <h3 class="text-lg font-semibold text-slate-700 mb-3 flex items-center">
+                    <span class="bg-slate-300 text-white px-2 py-1 rounded-full text-sm mr-2">40點</span>
+                    文具
+                </h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    <label class="flex items-center text-gray-700 cursor-pointer" onclick="checkGiftRequirement(40, this)">
+                        <input type="checkbox" class="mr-2" onclick="event.stopPropagation()"> 資料夾
+                    </label>
+                </div>
+            </div>
+
+            <!-- 65 Points -->
+            <div class="bg-slate-50 rounded-lg p-4 mb-4 border border-slate-200">
+                <h3 class="text-lg font-semibold text-slate-700 mb-3 flex items-center">
+                    <span class="bg-slate-300 text-white px-2 py-1 rounded-full text-sm mr-2">65點</span>
+                    特色商品
+                </h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    <label class="flex items-center text-gray-700 cursor-pointer" onclick="checkGiftRequirement(65, this)">
+                        <input type="checkbox" class="mr-2" onclick="event.stopPropagation()"> 寶可夢球吊飾
+                    </label>
+                </div>
+            </div>
+
+            <!-- 75 Points -->
+            <div class="bg-slate-50 rounded-lg p-4 mb-4 border border-slate-200">
+                <h3 class="text-lg font-semibold text-slate-700 mb-3 flex items-center">
+                    <span class="bg-slate-300 text-white px-2 py-1 rounded-full text-sm mr-2">75點</span>
+                    精美文具和小玩偶
+                </h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    <label class="flex items-center text-gray-700 cursor-pointer" onclick="checkGiftRequirement(75, this)">
+                        <input type="checkbox" class="mr-2" onclick="event.stopPropagation()"> 卡皮巴拉吊飾
+                    </label>
+                    <label class="flex items-center text-gray-700 cursor-pointer" onclick="checkGiftRequirement(75, this)">
+                        <input type="checkbox" class="mr-2" onclick="event.stopPropagation()"> 零錢包
+                    </label>
+                    <label class="flex items-center text-gray-700 cursor-pointer" onclick="checkGiftRequirement(75, this)">
+                        <input type="checkbox" class="mr-2" onclick="event.stopPropagation()"> 寶可夢資料夾
+                    </label>
+                    <label class="flex items-center text-gray-700 cursor-pointer" onclick="checkGiftRequirement(75, this)">
+                        <input type="checkbox" class="mr-2" onclick="event.stopPropagation()"> 吉伊卡哇吊飾
+                    </label>
+                    <label class="flex items-center text-gray-700 cursor-pointer" onclick="checkGiftRequirement(75, this)">
+                        <input type="checkbox" class="mr-2" onclick="event.stopPropagation()"> 百變怪10公分玩偶
+                     <label class="flex items-center text-gray-700 cursor-pointer" onclick="checkGiftRequirement(75, this)">
+                        <input type="checkbox" class="mr-2" onclick="event.stopPropagation()"> 可達鴨10公分玩偶
+                    </label>
+                </div>
+            </div>
+
+    </div>
+
+    <!-- Reward Modal -->
+    <div id="rewardModal" class="reward-modal" style="display: none;">
+        <div class="reward-card">
+            <div class="text-6xl mb-4">🎉</div>
+            <h3 class="text-2xl font-bold text-gray-800 mb-2">恭喜獲得獎勵！</h3>
+            <p class="text-gray-600 mb-4" id="rewardText"></p>
+            <button onclick="closeRewardModal()" class="bg-slate-300 hover:bg-slate-400 text-white px-6 py-2 rounded-lg font-semibold">
+                太棒了！
+            </button>
+        </div>
+    </div>
+
+
+    <!-- Password Modal -->
+    <div id="passwordModal" class="export-modal" style="display: none;" onclick="closePasswordModal()">
+        <div class="export-card" onclick="event.stopPropagation()">
+            <div class="text-4xl mb-4">🔒</div>
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">輸入密碼</h3>
+            <p class="text-gray-600 mb-4">請輸入密碼以修改上學期剩餘點數</p>
+            <div class="mb-4">
+                <input type="password" id="passwordInput" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-center" 
+                       placeholder="請輸入密碼" maxlength="4">
+            </div>
+            <div class="flex space-x-4 justify-center">
+                <button onclick="verifyPassword()" class="bg-slate-300 hover:bg-slate-400 text-white px-6 py-2 rounded-lg font-semibold">
+                    確認
+                </button>
+                <button onclick="closePasswordModal()" class="bg-slate-200 hover:bg-slate-300 text-white px-4 py-2 rounded-lg">
+                    取消
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Points Modal -->
+    <div id="editPointsModal" class="export-modal" style="display: none;">
+        <div class="export-card">
+            <div class="text-4xl mb-4">✏️</div>
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">修改上學期剩餘點數</h3>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">點數</label>
+                <input type="number" id="editPointsInput" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-center" 
+                       min="0" max="999" value="0">
+            </div>
+            <div class="flex space-x-4 justify-center">
+                <button onclick="savePreviousPoints()" class="bg-slate-300 hover:bg-slate-400 text-white px-6 py-2 rounded-lg font-semibold">
+                    儲存
+                </button>
+                <button onclick="closeEditPointsModal()" class="bg-slate-200 hover:bg-slate-300 text-white px-4 py-2 rounded-lg">
+                    取消
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gift Selection Modal -->
+    <div id="giftSelectionModal" class="export-modal" style="display: none;" onclick="closeGiftSelectionModal()">
+        <div class="export-card max-w-4xl max-h-96 overflow-y-auto" onclick="event.stopPropagation()">
+            <div class="text-4xl mb-4">🎁</div>
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">決定禮物</h3>
+            <p class="text-gray-600 mb-4">根據目前點數選擇想要的禮物（可複選）</p>
+            
+            <div id="giftOptions" class="space-y-4 mb-6">
+                <!-- Gift options will be populated by JavaScript -->
+            </div>
+            
+            <div class="border-t pt-4">
+                <h4 class="font-semibold text-gray-800 mb-2">已選擇的禮物：</h4>
+                <div id="selectedGifts" class="text-gray-600 min-h-6">尚未選擇任何禮物</div>
+            </div>
+            
+            <div class="flex space-x-4 justify-center mt-6">
+                <button onclick="saveGiftSelection()" class="bg-slate-300 hover:bg-slate-400 text-white px-6 py-2 rounded-lg font-semibold">
+                    儲存選擇
+                </button>
+                <button onclick="closeGiftSelectionModal()" class="bg-slate-200 hover:bg-slate-300 text-white px-4 py-2 rounded-lg">
+                    取消
+                </button>
+            </div>
+        </div>
+    </div>
+
+    
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDwfcITcACP3VCkaM2ylHImj38JfikUB6k",
+            authDomain: "student-punch-card.firebaseapp.com",
+            projectId: "student-punch-card",
+            storageBucket: "student-punch-card.firebasestorage.app",
+            messagingSenderId: "1234567890",
+            appId: "1:1234567890:web:152e6a859c4ede36184dc5",
+            measurementId: "G-3V1P3EM2G8"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Make Firebase functions available globally
+        window.db = db;
+        window.doc = doc;
+        window.setDoc = setDoc;
+        window.getDoc = getDoc;
+        window.onSnapshot = onSnapshot;
+    </script>
+
+    <script>
+        // 🔥 完全獨立的學生資料管理系統
+        let currentStudentData = {
+            studentName: '',
+            stamps: [],
+            startDate: '',
+            currentLessonStamps: 0,
+            previousPoints: 0,
+            selectedGifts: []
+        };
+
+        // 學生資料庫 - 每個學生完全獨立
+        const StudentDataManager = {
+            // 儲存學生資料到本地
+            saveStudentData: function(studentName, data) {
+                const key = `STUDENT_DATA_${studentName}`;
+                const studentData = {
+                    studentName: studentName,
+                    stamps: [...data.stamps],
+                    startDate: data.startDate,
+                    currentLessonStamps: data.currentLessonStamps,
+                    previousPoints: data.previousPoints,
+                    selectedGifts: [...data.selectedGifts],
+                    lastUpdated: new Date().toISOString()
+                };
+                localStorage.setItem(key, JSON.stringify(studentData));
+                console.log(`✅ ${studentName} 的資料已儲存到本地`);
+            },
+
+            // 從本地載入學生資料
+            loadStudentData: function(studentName) {
+                const key = `STUDENT_DATA_${studentName}`;
+                const savedData = localStorage.getItem(key);
+                
+                if (savedData) {
+                    const data = JSON.parse(savedData);
+                    console.log(`📂 載入 ${studentName} 的本地資料:`, data);
+                    return data;
+                } else {
+                    // 建立新學生的空白資料
+                    const newData = {
+                        studentName: studentName,
+                        stamps: [],
+                        startDate: new Date().toLocaleDateString('zh-TW'),
+                        currentLessonStamps: 0,
+                        previousPoints: 0,
+                        selectedGifts: []
+                    };
+                    this.saveStudentData(studentName, newData);
+                    console.log(`🆕 為 ${studentName} 建立新的資料`);
+                    return newData;
+                }
+            },
+
+            // 切換學生
+            switchStudent: function(studentName) {
+                if (!studentName) {
+                    currentStudentData = {
+                        studentName: '',
+                        stamps: [],
+                        startDate: '',
+                        currentLessonStamps: 0,
+                        previousPoints: 0,
+                        selectedGifts: []
+                    };
+                    return;
+                }
+
+                // 載入學生資料
+                const data = this.loadStudentData(studentName);
+                currentStudentData = {
+                    studentName: data.studentName,
+                    stamps: [...data.stamps],
+                    startDate: data.startDate,
+                    currentLessonStamps: data.currentLessonStamps,
+                    previousPoints: data.previousPoints,
+                    selectedGifts: [...data.selectedGifts]
+                };
+
+                console.log(`🔄 已切換到 ${studentName}:`, currentStudentData);
+            }
+        };
+
+        // Firebase functions - 完全獨立的學生資料儲存
+        async function saveToFirebase() {
+            if (!currentStudentData.studentName) {
+                console.log('沒有選擇學生，跳過Firebase儲存');
+                return;
+            }
+            
+            try {
+                const studentDoc = window.doc(window.db, 'independent_students', currentStudentData.studentName);
+                
+                const studentData = {
+                    studentName: currentStudentData.studentName,
+                    stamps: [...currentStudentData.stamps],
+                    startDate: currentStudentData.startDate,
+                    currentLessonStamps: currentStudentData.currentLessonStamps,
+                    previousPoints: currentStudentData.previousPoints,
+                    selectedGifts: [...currentStudentData.selectedGifts],
+                    lastUpdated: new Date().toISOString(),
+                    createdAt: new Date().toISOString()
+                };
+                
+                await window.setDoc(studentDoc, studentData, { merge: false });
+                console.log(`✅ ${currentStudentData.studentName} 的獨立資料已儲存到Firebase`);
+            } catch (error) {
+                console.error('❌ Firebase儲存失敗:', error);
+                showFeedback('儲存失敗，請檢查網路連線', 'error');
+            }
+        }
+
+        async function loadFromFirebase() {
+            if (!currentStudentData.studentName) {
+                console.log('沒有選擇學生，跳過Firebase載入');
+                return;
+            }
+            
+            try {
+                const studentDoc = window.doc(window.db, 'independent_students', currentStudentData.studentName);
+                const docSnap = await window.getDoc(studentDoc);
+                
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    console.log(`🔄 開始載入 ${currentStudentData.studentName} 的雲端資料...`);
+                    
+                    // 更新當前學生資料
+                    currentStudentData = {
+                        studentName: data.studentName,
+                        stamps: [...data.stamps],
+                        startDate: data.startDate,
+                        currentLessonStamps: data.currentLessonStamps,
+                        previousPoints: data.previousPoints,
+                        selectedGifts: [...data.selectedGifts]
+                    };
+                    
+                    // 同時更新本地儲存
+                    StudentDataManager.saveStudentData(currentStudentData.studentName, currentStudentData);
+                    
+                    // 更新UI
+                    updateUI();
+                    
+                    console.log(`✅ ${currentStudentData.studentName} 的雲端資料載入完成`);
+                } else {
+                    console.log(`📝 ${currentStudentData.studentName} 在雲端沒有資料，使用本地資料`);
+                }
+            } catch (error) {
+                console.error('❌ Firebase載入失敗:', error);
+                console.log('🔄 改用本地資料');
+            }
+        }
+
+        function updateUI() {
+            // 更新所有UI元素
+            document.getElementById('previousPoints').value = currentStudentData.previousPoints;
+            document.getElementById('startDate').textContent = currentStudentData.startDate;
+            generateStamps();
+            updateProgressDisplay();
+            updateGiftDisplay();
+            updateGiftAvailability();
+        }
+
+        // 移除學生切換視窗功能，改為直接切換
+
+        function initializeCard() {
+            // 直接載入固定學生：王晟凱
+            const fixedStudentName = '王晟凱';
+            StudentDataManager.switchStudent(fixedStudentName);
+            updateUI();
+        }
+
+        async function loadStudentData() {
+            const studentNameInput = document.getElementById('studentName');
+            const newStudentName = studentNameInput.value.trim();
+            
+            if (!newStudentName) {
+                alert('請輸入學生姓名！');
+                return;
+            }
+            
+            if (newStudentName === currentStudentData.studentName) {
+                showFeedback('已經是當前學生！');
+                return;
+            }
+            
+            console.log(`🔄 開始載入學生: ${newStudentName}`);
+            
+            // 顯示載入視窗
+            showLoadingOverlay();
+            
+            try {
+                // 先儲存當前學生資料
+                if (currentStudentData.studentName) {
+                    StudentDataManager.saveStudentData(currentStudentData.studentName, currentStudentData);
+                    try {
+                        await saveToFirebase();
+                    } catch (error) {
+                        console.log('當前學生資料Firebase儲存失敗');
+                    }
+                }
+                
+                // 切換學生
+                StudentDataManager.switchStudent(newStudentName);
+                localStorage.setItem('lastSelectedStudent', newStudentName);
+                
+                // 立即更新UI
+                updateUI();
+                
+                // 嘗試從Firebase載入
+                await loadFromFirebase();
+                
+                // 成功後3秒關閉載入視窗
+                setTimeout(() => {
+                    hideLoadingOverlay('success');
+                }, 3000);
+                
+                console.log(`✅ 成功載入 ${newStudentName}`);
+            } catch (error) {
+                console.error('載入學生失敗:', error);
+                // 失敗後3秒關閉載入視窗並顯示失敗
+                setTimeout(() => {
+                    hideLoadingOverlay('failed');
+                }, 3000);
+            }
+        }
+
+        function updateProgressDisplay() {
+            const currentStamps = currentStudentData.stamps.length;
+            const previousPoints = currentStudentData.previousPoints;
+            const totalPoints = currentStamps + previousPoints;
+            
+            const progressElement = document.getElementById('currentProgress');
+            const previousPointsElement = document.getElementById('previousPointsDisplay');
+            const totalPointsElement = document.getElementById('totalPointsDisplay');
+            
+            if (progressElement) {
+                progressElement.textContent = `${currentStamps} / 80`;
+            }
+            if (previousPointsElement) {
+                previousPointsElement.textContent = `${previousPoints} 點`;
+            }
+            if (totalPointsElement) {
+                totalPointsElement.textContent = `${totalPoints} 點`;
+            }
+        }
+
+        function updateGiftDisplay() {
+            if (!currentStudentData.studentName) return;
+            
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            
+            // Clear all checkboxes first
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            
+            // Check the selected gifts for this student
+            currentStudentData.selectedGifts.forEach(giftName => {
+                checkboxes.forEach(checkbox => {
+                    const label = checkbox.closest('label');
+                    if (label && label.textContent.trim() === giftName) {
+                        checkbox.checked = true;
+                    }
+                });
+            });
+        }
+
+        function generateStamps() {
+            const stampsGrid = document.getElementById('stampsGrid');
+            if (!stampsGrid) return;
+            
+            stampsGrid.innerHTML = '';
+            
+            for (let i = 0; i < 80; i++) {
+                const stampDiv = document.createElement('div');
+                stampDiv.className = 'stamp-circle';
+                stampDiv.setAttribute('data-index', i);
+                stampDiv.onclick = () => toggleStamp(i);
+                
+                if (currentStudentData.stamps.includes(i)) {
+                    stampDiv.classList.add('stamped');
+                    stampDiv.innerHTML = '✓';
+                } else {
+                    stampDiv.innerHTML = (i + 1).toString();
+                }
+                
+                stampsGrid.appendChild(stampDiv);
+            }
+            
+            updateProgressDisplay();
+        }
+
+        async function toggleStamp(index) {
+            if (!currentStudentData.studentName) {
+                showStudentSelectionAlert();
+                return;
+            }
+            
+            const nextStampIndex = currentStudentData.stamps.length;
+            
+            if (currentStudentData.stamps.includes(index)) {
+                if (index === Math.max(...currentStudentData.stamps)) {
+                    currentStudentData.stamps = currentStudentData.stamps.filter(s => s !== index);
+                } else {
+                    alert('只能移除最後一個印章！');
+                    return;
+                }
+            } else {
+                if (index === nextStampIndex) {
+                    currentStudentData.stamps.push(index);
+                    currentStudentData.stamps.sort((a, b) => a - b);
+                } else {
+                    alert('請按照順序集點！');
+                    return;
+                }
+            }
+            
+            StudentDataManager.saveStudentData(currentStudentData.studentName, currentStudentData);
+            generateStamps();
+            await saveToFirebase();
+        }
+
+        async function addStampsByRule(count) {
+            if (!currentStudentData.studentName) {
+                showStudentSelectionAlert();
+                return;
+            }
+
+            if (currentStudentData.currentLessonStamps + count > 5) {
+                alert(`本堂課已累積 ${currentStudentData.currentLessonStamps} 個印章，最多只能累積 5 個印章！`);
+                return;
+            }
+            
+            for (let i = 0; i < count; i++) {
+                for (let j = 0; j < 80; j++) {
+                    if (!currentStudentData.stamps.includes(j)) {
+                        currentStudentData.stamps.push(j);
+                        currentStudentData.stamps.sort((a, b) => a - b);
+                        currentStudentData.currentLessonStamps++;
+                        break;
+                    }
+                }
+            }
+            
+            StudentDataManager.saveStudentData(currentStudentData.studentName, currentStudentData);
+            generateStamps();
+            await saveToFirebase();
+            
+            showFeedback(`已新增 ${count} 個印章！本堂課累積：${currentStudentData.currentLessonStamps}/5`);
+        }
+
+        async function confirmUpload() {
+            if (!currentStudentData.studentName) {
+                alert('請先選擇學生！');
+                return;
+            }
+            
+            await saveToFirebase();
+            currentStudentData.currentLessonStamps = 0;
+            StudentDataManager.saveStudentData(currentStudentData.studentName, currentStudentData);
+            
+            showFeedback('已上傳印章至雲端，為您準備下一堂課。');
+        }
+
+        function confirmResetCurrentLesson() {
+            if (!currentStudentData.studentName) {
+                alert('請先選擇學生！');
+                return;
+            }
+            
+            if (currentStudentData.currentLessonStamps === 0) {
+                alert('本堂課尚未新增任何印章！');
+                return;
+            }
+            
+            showResetConfirmModal();
+        }
+
+        async function resetCurrentLesson() {
+            for (let i = 0; i < currentStudentData.currentLessonStamps; i++) {
+                if (currentStudentData.stamps.length > 0) {
+                    currentStudentData.stamps.pop();
+                }
+            }
+            
+            currentStudentData.currentLessonStamps = 0;
+            StudentDataManager.saveStudentData(currentStudentData.studentName, currentStudentData);
+            generateStamps();
+            await saveToFirebase();
+            showFeedback('已重置本堂課的印章！');
+        }
+
+        function showResetConfirmModal() {
+            const modal = document.createElement('div');
+            modal.className = 'fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center z-50';
+            modal.innerHTML = `
+                <div class="bg-white rounded-2xl p-6 max-w-md mx-4 text-center">
+                    <div class="text-4xl mb-4" style="color: red;">❕</div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">確認重置本堂課</h3>
+                    <p class="text-gray-600 mb-6">確定要重置本堂課的 ${currentStudentData.currentLessonStamps} 個印章嗎？</p>
+                    <div class="flex space-x-4 justify-center">
+                        <button onclick="confirmReset()" class="bg-red-200 hover:bg-red-300 text-red-800 px-6 py-2 rounded-lg font-semibold">
+                            確定重置
+                        </button>
+                        <button onclick="cancelReset()" class="bg-slate-200 hover:bg-slate-300 text-white px-6 py-2 rounded-lg font-semibold">
+                            取消
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            window.currentResetModal = modal;
+        }
+
+        async function confirmReset() {
+            await resetCurrentLesson();
+            document.body.removeChild(window.currentResetModal);
+        }
+
+        function cancelReset() {
+            document.body.removeChild(window.currentResetModal);
+        }
+
+        function showStudentSelectionAlert() {
+            const modal = document.createElement('div');
+            modal.className = 'fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center z-50';
+            modal.innerHTML = `
+                <div class="bg-white rounded-2xl p-6 max-w-md mx-4 text-center">
+                    <div class="text-4xl mb-4">👩🏼‍🎓👨🏼‍🎓</div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">請選擇學生</h3>
+                    <p class="text-gray-600 mb-6">請先在上方選擇學生，才能開始集點！</p>
+                    <button onclick="closeStudentAlert()" class="bg-slate-300 hover:bg-slate-400 text-white px-6 py-2 rounded-lg font-semibold">
+                        我知道了
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            window.currentStudentAlert = modal;
+        }
+
+        function closeStudentAlert() {
+            if (window.currentStudentAlert) {
+                document.body.removeChild(window.currentStudentAlert);
+            }
+        }
+
+        // Password and previous points functions
+        function showPasswordModal() {
+            // 直接顯示編輯點數視窗，不需要密碼驗證
+            showEditPointsModal();
+        }
+
+        function closePasswordModal() {
+            document.getElementById('passwordModal').style.display = 'none';
+        }
+
+        function verifyPassword() {
+            const password = document.getElementById('passwordInput').value;
+            if (password === '0103') {
+                closePasswordModal();
+                showEditPointsModal();
+            } else {
+                alert('密碼錯誤！');
+                document.getElementById('passwordInput').value = '';
+            }
+        }
+
+        function showEditPointsModal() {
+            document.getElementById('editPointsInput').value = currentStudentData.previousPoints;
+            document.getElementById('editPointsModal').style.display = 'flex';
+            document.getElementById('editPointsInput').focus();
+        }
+
+        function closeEditPointsModal() {
+            document.getElementById('editPointsModal').style.display = 'none';
+        }
+
+        async function savePreviousPoints() {
+            const points = parseInt(document.getElementById('editPointsInput').value) || 0;
+            currentStudentData.previousPoints = points;
+            document.getElementById('previousPoints').value = points;
+            
+            StudentDataManager.saveStudentData(currentStudentData.studentName, currentStudentData);
+            
+            try {
+                await saveToFirebase();
+                showFeedback(`已更新上學期剩餘點數：${points} 點`);
+            } catch (error) {
+                showFeedback('點數已儲存到本地，但雲端同步失敗', 'warning');
+            }
+            
+            closeEditPointsModal();
+            updateProgressDisplay();
+            updateGiftAvailability();
+        }
+
+        function checkGiftRequirement(requiredPoints, labelElement) {
+            const currentStamps = currentStudentData.stamps.length;
+            const totalPoints = currentStamps + currentStudentData.previousPoints;
+            const checkbox = labelElement.querySelector('input[type="checkbox"]');
+            
+            if (totalPoints >= requiredPoints) {
+                checkbox.checked = !checkbox.checked;
+            } else {
+                if (!checkbox.checked) {
+                    const pointsNeeded = requiredPoints - totalPoints;
+                    showPointsNeededAlert(pointsNeeded);
+                }
+            }
+        }
+
+        function showPointsNeededAlert(pointsNeeded) {
+            const modal = document.createElement('div');
+            modal.className = 'fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center z-50';
+            modal.innerHTML = `
+                <div class="bg-white rounded-2xl p-6 max-w-md mx-4 text-center">
+                    <div class="text-4xl mb-4">💪</div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">繼續努力！</h3>
+                    <p class="text-gray-600 mb-6">還差 ${pointsNeeded} 點就可以兌換這個禮物了！</p>
+                    <button onclick="closePointsAlert()" class="bg-slate-300 hover:bg-slate-400 text-white px-6 py-2 rounded-lg font-semibold">
+                        我會加油的！
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            window.currentPointsAlert = modal;
+        }
+
+        function closePointsAlert() {
+            if (window.currentPointsAlert) {
+                document.body.removeChild(window.currentPointsAlert);
+            }
+        }
+
+        function showAddStudentModal() {
+            document.getElementById('addStudentModal').style.display = 'flex';
+            document.getElementById('newStudentName').value = '';
+            document.getElementById('newStudentName').focus();
+        }
+
+        function closeAddStudentModal() {
+            document.getElementById('addStudentModal').style.display = 'none';
+        }
+
+
+
+        // Gift selection functionality
+        const giftCategories = [
+    {
+        title: "文具",
+        points: 30,
+        color: "slate",
+        gifts: ["自動鉛筆", "尺", "鉛筆", "原子筆", "立可帶", "筆記本", "橡皮擦"]
+    },
+    {
+        title: "文具",
+        points: 40,
+        color: "slate",
+        gifts: ["資料夾"]
+    },
+    {
+        title: "特色商品",
+        points: 65,
+        color: "slate",
+        gifts: ["寶可夢球吊飾"]
+    },
+    {
+        title: "精美文具和小玩具",
+        points: 75,
+        color: "slate",
+        gifts: ["卡皮巴拉吊飾", "零錢包", "寶可夢資料夾", "伊布卡嚕吊飾", "百變怪10公分玩具", "可達鴨10公分玩具"]
+    }
+];
+        function showGiftSelectionModal() {
+
+            const currentStamps = currentStudentData.stamps.length;
+            const totalPoints = currentStamps + currentStudentData.previousPoints;
+            const giftOptionsContainer = document.getElementById('giftOptions');
+            giftOptionsContainer.innerHTML = '';
+
+            giftCategories.forEach(category => {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = `bg-slate-50 border border-slate-200 rounded-lg p-4`;
+                categoryDiv.innerHTML = `
+                    <h4 class="text-lg font-semibold text-slate-700 mb-3 flex items-center">
+                        <span class="bg-slate-300 text-white px-2 py-1 rounded-full text-sm mr-2">${category.points}點</span>
+                        ${category.title}
+                        ${totalPoints < category.points ? '<span class="text-red-500 text-sm ml-2">(點數不足)</span>' : ''}
+                    </h4>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                        ${category.gifts.map(gift => `
+                            <label class="flex items-center text-gray-700 cursor-pointer ${totalPoints < category.points ? 'opacity-50' : ''}">
+                                <input type="checkbox" class="mr-2 gift-checkbox" data-gift="${gift}" data-points="${category.points}" 
+                                       ${totalPoints < category.points ? 'disabled' : ''} onchange="updateSelectedGifts()"> 
+                                ${gift}
+                            </label>
+                        `).join('')}
+                    </div>
+                `;
+                giftOptionsContainer.appendChild(categoryDiv);
+            });
+
+            loadSelectedGifts();
+            updateSelectedGifts();
+            
+            document.getElementById('giftSelectionModal').style.display = 'flex';
+        }
+
+        function loadSelectedGifts() {
+            const checkboxes = document.querySelectorAll('.gift-checkbox');
+            
+            checkboxes.forEach(checkbox => {
+                if (currentStudentData.selectedGifts.includes(checkbox.dataset.gift)) {
+                    checkbox.checked = true;
+                }
+            });
+        }
+
+        function updateSelectedGifts() {
+            const selectedCheckboxes = document.querySelectorAll('.gift-checkbox:checked');
+            const selectedGiftsDiv = document.getElementById('selectedGifts');
+            
+            if (selectedCheckboxes.length === 0) {
+                selectedGiftsDiv.textContent = '尚未選擇任何禮物';
+                selectedGiftsDiv.className = 'text-gray-600 min-h-6';
+            } else {
+                const gifts = Array.from(selectedCheckboxes).map(cb => cb.dataset.gift);
+                selectedGiftsDiv.innerHTML = gifts.map(gift => 
+                    `<span class="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm mr-2 mb-1">${gift}</span>`
+                ).join('');
+                selectedGiftsDiv.className = 'min-h-6';
+            }
+        }
+
+        async function saveGiftSelection() {
+            const selectedCheckboxes = document.querySelectorAll('.gift-checkbox:checked');
+            const selectedGifts = Array.from(selectedCheckboxes).map(cb => cb.dataset.gift);
+            
+            currentStudentData.selectedGifts = [...selectedGifts];
+            StudentDataManager.saveStudentData(currentStudentData.studentName, currentStudentData);
+            
+            try {
+                await saveToFirebase();
+                showFeedback(`已為 ${currentStudentData.studentName} 記錄禮物選擇！`);
+            } catch (error) {
+                showFeedback('禮物選擇已儲存到本地，但雲端同步失敗', 'warning');
+            }
+            
+            closeGiftSelectionModal();
+        }
+
+        function closeGiftSelectionModal() {
+            document.getElementById('giftSelectionModal').style.display = 'none';
+        }
+
+        function showRewardModal(reward) {
+            document.getElementById('rewardText').textContent = `你已經${reward.description}！獲得「${reward.title}」獎勵！`;
+            document.getElementById('rewardModal').style.display = 'flex';
+        }
+
+        function closeRewardModal() {
+            document.getElementById('rewardModal').style.display = 'none';
+        }
+function updateGiftAvailability() {
+    const currentStamps = currentStudentData.stamps.length;
+    const totalPoints = currentStamps + currentStudentData.previousPoints;
+    
+    // 更新所有禮物項目的可選狀態
+    const giftLabels = document.querySelectorAll('label[onclick*="checkGiftRequirement"]');
+    
+    giftLabels.forEach(label => {
+        const onclickAttr = label.getAttribute('onclick');
+        // 從 onclick 屬性中提取需要的點數
+        const match = onclickAttr.match(/checkGiftRequirement\((\d+),/);
+        if (match) {
+            const requiredPoints = parseInt(match[1]);
+            const checkbox = label.querySelector('input[type="checkbox"]');
+            
+            if (totalPoints >= requiredPoints) {
+                // 有足夠點數 - 啟用
+                label.classList.remove('opacity-50');
+                label.style.cursor = 'pointer';
+                if (checkbox && !currentStudentData.selectedGifts.includes(label.textContent.trim())) {
+                    checkbox.disabled = false;
+                }
+            } else {
+                // 點數不足 - 停用
+                label.classList.add('opacity-50');
+                label.style.cursor = 'not-allowed';
+                if (checkbox && !checkbox.checked) {
+                    checkbox.disabled = true;
+                }
+            }
+        }
+    });
+}
+        function showFeedback(message, type = 'success') {
+            const feedback = document.createElement('div');
+            let bgColor = 'bg-green-500';
+            if (type === 'error') bgColor = 'bg-red-500';
+            if (type === 'warning') bgColor = 'bg-yellow-500';
+            
+            feedback.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-all`;
+            feedback.textContent = message;
+            document.body.appendChild(feedback);
+            
+            setTimeout(() => {
+                feedback.style.opacity = '0';
+                setTimeout(() => {
+                    if (document.body.contains(feedback)) {
+                        document.body.removeChild(feedback);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        // Loading overlay functions
+        function showLoadingOverlay() {
+            const overlay = document.getElementById('loadingOverlay');
+            const loadingText = overlay.querySelector('p');
+            loadingText.textContent = '正在載入專屬資料...';
+            loadingText.className = 'text-gray-600';
+            overlay.style.display = 'flex';
+        }
+
+        function hideLoadingOverlay(status) {
+            const overlay = document.getElementById('loadingOverlay');
+            const loadingText = overlay.querySelector('p');
+            const spinner = overlay.querySelector('.loading-spinner');
+            
+            if (status === 'success') {
+                spinner.style.display = 'none';
+                loadingText.textContent = '載入成功！';
+                loadingText.className = 'text-green-600 font-semibold';
+                
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    spinner.style.display = 'block'; // 重置spinner顯示
+                }, 1000);
+            } else if (status === 'failed') {
+                spinner.style.display = 'none';
+                loadingText.textContent = '載入失敗';
+                loadingText.className = 'text-red-600 font-semibold';
+                
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    spinner.style.display = 'block'; // 重置spinner顯示
+                }, 2000);
+            }
+        }
+
+        // Make all functions globally available
+        window.addStampsByRule = addStampsByRule;
+        window.confirmResetCurrentLesson = confirmResetCurrentLesson;
+        window.confirmUpload = confirmUpload;
+        window.closeRewardModal = closeRewardModal;
+        window.showPasswordModal = showPasswordModal;
+        window.closePasswordModal = closePasswordModal;
+        window.verifyPassword = verifyPassword;
+        window.showEditPointsModal = showEditPointsModal;
+        window.closeEditPointsModal = closeEditPointsModal;
+        window.savePreviousPoints = savePreviousPoints;
+        window.checkGiftRequirement = checkGiftRequirement;
+        window.closePointsAlert = closePointsAlert;
+        window.loadStudentData = loadStudentData;
+        window.showGiftSelectionModal = showGiftSelectionModal;
+        window.closeGiftSelectionModal = closeGiftSelectionModal;
+        window.saveGiftSelection = saveGiftSelection;
+        window.updateSelectedGifts = updateSelectedGifts;
+        window.confirmReset = confirmReset;
+        window.cancelReset = cancelReset;
+        window.closeStudentAlert = closeStudentAlert;
+        window.showLoadingOverlay = showLoadingOverlay;
+        window.hideLoadingOverlay = hideLoadingOverlay;
+
+        // Initialize the card when page loads
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🚀 頁面載入完成，開始初始化王晟凱的集點卡...');
+            
+            // 立即顯示80個圓圈
+            generateStamps();
+            updateProgressDisplay();
+            
+            // 初始化固定學生
+            initializeCard();
+            
+            // 嘗試從Firebase載入學生的資料
+            setTimeout(async () => {
+                await loadFromFirebase();
+            }, 500);
+        });
+    </script>
+    <script>
+const correctPassword = "0103"; // 正確密碼
+
+// 打開密碼彈窗
+function showPasswordModal() {
+    document.getElementById("passwordModal").style.display = "flex";
+}
+
+// 關閉密碼彈窗
+function closePasswordModal() {
+    document.getElementById("passwordModal").style.display = "none";
+}
+}
+</script>
+
+  <script>
+    // ===== 你的 JavaScript Code 開始 =====
+    async function toggleStamp(index) {
+        if (!currentStudentData.studentName) {
+            showStudentSelectionAlert();
+            return;
+        }
+        
+        const nextStampIndex = currentStudentData.stamps.length;
+        
+        if (currentStudentData.stamps.includes(index)) {
+            if (index === Math.max(...currentStudentData.stamps)) {
+                currentStudentData.stamps = currentStudentData.stamps.filter(s => s !== index);
+            } else {
+                alert('只能移除最後一個蓋章！');
+                return;
+            }
+        } else {
+            if (index === nextStampIndex) {
+                currentStudentData.stamps.push(index);
+                currentStudentData.stamps.sort((a, b) => a - b);
+            } else {
+                alert('請按照順序集點！');
+                return;
+            }
+        }
+        
+        StudentDataManager.saveStudentData(currentStudentData.studentName, currentStudentData);
+        generateStamps();
+        saveToFirebase().catch(error => {
+            console.error('Firebase儲存失敗，但本地已儲存:', error);
+        });
+    }
+
+    async function addStampsByRule(count) {
+        if (!currentStudentData.studentName) {
+            showStudentSelectionAlert();
+            return;
+        }
+
+        if (currentStudentData.currentLessonStamps + count > 4) {
+            alert(`本堂課已累積 ${currentStudentData.currentLessonStamps} 個蓋章，最多只能累積 4 個蓋章！`);
+            return;
+        }
+        
+        for (let i = 0; i < count; i++) {
+            for (let j = 0; j < 80; j++) {
+                if (!currentStudentData.stamps.includes(j)) {
+                    currentStudentData.stamps.push(j);
+                    currentStudentData.stamps.sort((a, b) => a - b);
+                    currentStudentData.currentLessonStamps++;
+                    break;
+                }
+            }
+        }
+        
+        StudentDataManager.saveStudentData(currentStudentData.studentName, currentStudentData);
+        generateStamps();
+        saveToFirebase().catch(error => {
+            console.error('Firebase儲存失敗，但本地已儲存:', error);
+        });
+        
+        showFeedback(`已新增 ${count} 個蓋章！本堂課累積：${currentStudentData.currentLessonStamps}/4`);
+    }
+
+    function generateStamps() {
+        const stampsGrid = document.getElementById('stampsGrid');
+        if (!stampsGrid) return;
+        
+        stampsGrid.innerHTML = '';
+        
+        for (let i = 0; i < 80; i++) {
+            const stampDiv = document.createElement('div');
+            stampDiv.className = 'stamp-circle';
+            stampDiv.setAttribute('data-index', i);
+            stampDiv.onclick = () => toggleStamp(i);
+            
+            if (currentStudentData.stamps.includes(i)) {
+                stampDiv.classList.add('stamped');
+                stampDiv.innerHTML = '✓';
+            } else {
+                stampDiv.innerHTML = (i + 1).toString();
+            }
+            
+            stampsGrid.appendChild(stampDiv);
+        }
+        
+        updateProgressDisplay();
+        
+        if (currentStudentData.studentName) {
+            StudentDataManager.saveStudentData(currentStudentData.studentName, currentStudentData);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', async function() {
+        console.log('🚀 頁面載入完成，開始初始化王晟凱的集點卡...');
+        generateStamps();
+        updateProgressDisplay();
+        initializeCard();
+        
+        updateGiftAvailability();
+        
+        setTimeout(async () => {
+            try {
+                await loadFromFirebase();
+                console.log('✅ Firebase資料載入完成');
+            } catch (error) {
+                console.log('📂 使用本地資料，Firebase載入失敗:', error);
+            }
+        }, 1000);
+    });
+
+    window.addEventListener('beforeunload', function() {
+        if (currentStudentData.studentName) {
+            StudentDataManager.saveStudentData(currentStudentData.studentName, currentStudentData);
+            if (window.db) {
+                saveToFirebase().catch(() => {});
+            }
+        }
+    });
+
+    setInterval(() => {
+        if (currentStudentData.studentName && currentStudentData.stamps.length > 0) {
+            StudentDataManager.saveStudentData(currentStudentData.studentName, currentStudentData);
+            saveToFirebase().catch(error => {
+                console.log('定期儲存：Firebase同步失敗，但本地已儲存');
+            });
+        }
+    }, 30000);
+    // ===== 你的 JavaScript Code 結束 =====
+  </script>
+<script>
+async function uploadCurrentData() {
+    if (!currentStudentData.studentName) {
+        alert('請先選擇學生！');
+        return;
+    }
+    
+    try {
+        await saveToFirebase();
+        showFeedback(`${currentStudentData.studentName}的資料已上傳到雲端！`);
+    } catch (error) {
+        showFeedback('上傳失敗，請檢查網路連線', 'error');
+        console.error('Firebase上傳錯誤:', error);
+    }
+}
+
+// 將函數加入全域可用
+window.uploadCurrentData = uploadCurrentData;
+</script>
+
+
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97e2aa81a32b6c01',t:'MTc1NzcxNDMwNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
